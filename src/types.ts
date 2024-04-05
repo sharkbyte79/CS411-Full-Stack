@@ -6,10 +6,41 @@ export interface IUserInformation {
   href: string;
   id: string;
   images: {
-            url: string;
-            height: string;
-            width: string
-          } []
+    url: string;
+    height: string;
+    width: string
+  } []
   type: string;
   uri: string
+}
+
+export interface ISongInformation {
+  album: {
+    id: string;
+    images: {
+      url: string;
+      height: number;
+      width: number
+    } [];
+    name: string;
+    release_date: string
+  }
+  artists: {
+    name: string
+  } [];
+  id: string;
+  name: string;
+  preview_url: string;
+  external_url: {
+    spotify: string
+  };
+  uri: string
+}
+
+export interface IPlaylist {
+  id: string;
+  name: string;
+  external_url: {
+    spotify: string
+  }
 }
