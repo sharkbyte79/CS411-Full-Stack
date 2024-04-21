@@ -14,12 +14,18 @@ const login = require("./routes/login");
 const cover = require("./routes/cover");
 // TODO: MORE ROUTES HERE
 
+// NOTE: Mozilla web docs and tutorials show these in the following format,
+//  const someRoute = require("./routes/someRoute")
+//  app.use("/someRoute", someRoute)
+// But including the intended name of the route for the first parameter, as per my testing,
+// makes Express unable to find it!
 app.use("/", login);
-app.use("/", cover)
+app.use("/", cover);
 
 const mongoose = require("mongoose");
 mongoose
   .connect(mongodb_uri, {
+    // Mongo throws warnings in the console for these; just ignore it
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
