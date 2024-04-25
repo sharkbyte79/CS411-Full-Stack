@@ -20,25 +20,24 @@ router.get('/cover', async (req, res) => {
                 'https://api.thecatapi.com/v1/images/search?' +
                     querystring.stringify({
                         api_key: cat_api_key,
+                        has_breeds: 0, // set to 1 to only return entries with breed info
                     })
             );
             urlParts = response.data[0].url.split('.');
             fileExt = urlParts[3];
             console.log(
-                '[server]: Request contained url with extension:',
+                '[server]: Response contained url with extension',
                 fileExt
             );
-            // Stop making requests if the return isn't a gif
+            // Stop making requests if the return is a jpg or png
             if (fileExt != 'gif') {
                 isGIF = false;
+            } else {
+                console.log('[server]: Response with gif was rejected');
             }
         }
-
-        console.log(
-            '[server]: Response from TheCatAPI was:\n',
-            response.data[0]
-        );
-        res.send(response.data[0]);
+        // console.log('[server]: Response from TheCatAPI was:\n',response.data[0]);
+        res.send(response.data[0]); // NOTE: Right now we're just displaying the response
     } catch (error) {
         res.status(500).send(error.toString());
     }

@@ -47,38 +47,6 @@ router.get('/login', (req, res) => {
     );
 });
 
-router.get('/callback', (req, res) => {
-    var code = req.query.code || null;
-    var state = req.query.state || null;
-
-    if (state === null) {
-        res.redirect(
-            '/#' +
-                querystring.stringify({
-                    error: 'state_mismatch',
-                })
-        );
-    } else {
-        var authOptions = {
-            url: 'https://accounts.spotify.com/api/token',
-            form: {
-                code: code,
-                redirect_uri: redirect_uri,
-                grant_type: 'authorization_code',
-            },
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-                Authorization:
-                    'Basic ' +
-                    new Buffer.from(client_id + ':' + client_secret).toString(
-                        'base64'
-                    ),
-            },
-            json: true,
-        };
-    }
-});
-
 // NOTE: This is untested as of the time of writing (12 April 2024), making sure it works
 // will require waiting an hour for the user's authorization token to expire.
 router.get('/refresh_token', (req, res) => {

@@ -1,26 +1,23 @@
-const express = require("express");
-const axios = require("axios");
-const Playlist = require("../models/Playlist");
+const express = require('express');
+const axios = require('axios');
+const mongoose = require('mongoose');
+const Playlist = require('../models/Playlist');
 
 const router = express.Router();
 
-router.get("/playlist", async (req, res) => {
+router.get('/playlist', async (req, res) => {
     try {
-        // NOTE: Not sure how to handle using the access token acquired during
-        // auth, need to figure this out before we can make the playlist.
-
-
+        const access_token = await Token.find();
     } catch (error) {
         res.status(500).send(error.toString());
     }
 });
 
-router.post("/save-playlist", async (req, res) => {
+router.get('/save-playlist', async (req, res) => {
     try {
-        
     } catch (error) {
         res.status(500).send(error.toString());
     }
-})
+});
 
 module.exports = router;
