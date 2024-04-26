@@ -9,7 +9,7 @@ export interface IUserInformation {
     url: string;
     height: string;
     width: string
-  } []
+  }[]
   type: string;
   uri: string
 }
@@ -21,17 +21,17 @@ export interface ISongInformation {
       url: string;
       height: number;
       width: number
-    } [];
+    }[];
     name: string;
     release_date: string
   }
   artists: {
     name: string
-  } [];
+  }[];
   id: string;
   name: string;
   preview_url: string;
-  external_url: {
+  external_urls: {
     spotify: string
   };
   uri: string
@@ -40,7 +40,7 @@ export interface ISongInformation {
 export interface IPlaylist {
   id: string;
   name: string;
-  external_url: {
+  external_urls: {
     spotify: string
   }
 }
