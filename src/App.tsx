@@ -11,7 +11,7 @@ const App = () => {
   /* UseStae Declaration */
   const [token, setToken] = useState<string>("");
   const [user, setUser] = useState<IUserInformation | null>(null);
-  const [songIDs, setSongIDs] = useState<string[]>(["0kdqcbwei4MDWFEX5f33yG","44L2bY93uD65CEHWbozpx4","5TiGe89LNDwridBLbLBGgR","22VHOlVYBqytsrAqV8yXBK","0ZpHuEhi1CvOJgrqOSy8mv","60bAuEmJQfzeDV1B84H4xY"]);
+  const [songIDs, setSongIDs] = useState<string[]>(["0kdqcbwei4MDWFEX5f33yG", "44L2bY93uD65CEHWbozpx4", "5TiGe89LNDwridBLbLBGgR", "22VHOlVYBqytsrAqV8yXBK", "0ZpHuEhi1CvOJgrqOSy8mv", "60bAuEmJQfzeDV1B84H4xY"]);
   const [songs, setSongs] = useState<ISongInformation[]>([]);
   const [playlist, setPlaylist] = useState<IPlaylist | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -22,14 +22,19 @@ const App = () => {
     window.localStorage.removeItem("token")
   };
 
-  const spotifyLogin = () => {
-    const url = `${CONST.AUTH_ENDPOINT}?client_id=${CONST.CLIENT_ID}&redirect_uri=${CONST.REDIRECT_URI}&response_type=${CONST.RESPONSE_TYPE}&scope=${CONST.SCOPE}`;
-    window.location.href = url;
+  const spotifyLogin = async () => {
+    try {
+      const res = await fetch('login');
+      const data = await res.json()
+      console.log(data)
+      window.location.href = data
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   /* Functions that use Sportify API */
 
-  
   const fetchUserInfomation = async () => {
     try {
       const res = await fetch(`https://api.spotify.com/v1/me`, {
@@ -127,7 +132,7 @@ const App = () => {
     }
   };
 
-  async function fetchSingleSongInformation (id: string) {
+  async function fetchSingleSongInformation(id: string) {
     try {
       const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
         method: "GET",
@@ -140,7 +145,7 @@ const App = () => {
       return json;
     } catch (error) {
       console.error("Error fetching user information:", error);
-    } 
+    }
   };
 
   const fetchSongsInformation = async (ids: string[]) => {
@@ -150,7 +155,7 @@ const App = () => {
         const info = await fetchSingleSongInformation(id)
         json.push(info);
       }
-      
+
       console.log(json);
       setSongs(json);
     } catch (error) {
@@ -206,29 +211,30 @@ const App = () => {
   /* Helper functions */
 
   /* Helper function of displayImage*/
-  function chunkArray (songs: ISongInformation[], chunkSize: number) {
-    const urls = [];
-    for (const song of songs) {
-      urls.push(song.album.images[1].url);
-    }
-
+  function chunkArray(songs: ISongInformation[], chunkSize: number) {
     const chunks = [];
-    for (let i = 0; i < urls.length; i += chunkSize) {
-      chunks.push(urls.slice(i, i + chunkSize));
+    for (let i = 0; i < songs.length; i += chunkSize) {
+      chunks.push(songs.slice(i, i + chunkSize));
     }
     return chunks;
   };
 
   /* Generate the correct html for image displayment */
-  function displayImage (songs: ISongInformation[]) {
+  function displayImage(songs: ISongInformation[]) {
     const chunkedUrls = chunkArray(songs, 3);
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="container">
         {chunkedUrls.map((group, index) => (
-          <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginTop: index !== 0 ? '10px' : '0' }}>
-            {group.map((url, i) => (
-              <img key={i} src={url} alt={`Image ${i + 1}`} style={{ marginRight: i !== group.length - 1 ? '10px' : '0' }} />
+          <div key={index} className="group">
+            {group.map((song, i) => (
+              <div key={i} className="songContainer">
+                <a href={song.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+                  <img src={song.album.images[1].url} alt={`Image ${i + 1}`} style={{ marginRight: i !== group.length - 1 ? '50px' : '0', cursor: 'pointer' }} />
+                </a>
+                <div className="songName">{song.name}</div>
+                <div className="artistName">{song.artists[0].name}</div>
+              </div>
             ))}
           </div>
         ))}
@@ -240,18 +246,18 @@ const App = () => {
     return (
       <div className="App">
         <header className="App-header">
-        {!isLoading ? (<h1> Spotify Arcade <BsSpotify /></h1>)
-          : <h1> Generating</h1>
-        }
+          {!isLoading ? (<h1> Spotify Arcade <BsSpotify /></h1>)
+            : <h1> Generating</h1>
+          }
 
-        {!isLoading ? (<div className="Button">
-          {token ? 
-            <button onClick={logout}>Logout</button>
-          : <button onClick={spotifyLogin}>Login To Start</button>}
-          {token ? 
-            <button onClick={playClick}>Let's Play</button>
-          : <></>}
-        </div>):(<Circles/>)}
+          {!isLoading ? (<div className="Button">
+            {token ?
+              <button onClick={logout}>Logout</button>
+              : <button onClick={spotifyLogin}>Login To Start</button>}
+            {token ?
+              <button onClick={playClick}>Let's Play</button>
+              : <></>}
+          </div>) : (<Circles />)}
         </header>
       </div>
     )
@@ -260,11 +266,12 @@ const App = () => {
   return (
     <div className="App">
       <header className="App-header">
+        <h1> About </h1>
         {displayImage(songs)}
         <button onClick={createClick}>Create Playlist</button>
       </header>
     </div>
-    
+
 
 
     // <div className="App">
