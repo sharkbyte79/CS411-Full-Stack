@@ -257,6 +257,7 @@ const App = () => {
             {token ?
               <button onClick={playClick}>Let's Play</button>
               : <></>}
+              <p className="description">Create a Spotify playlist based on cute photos of cats!</p>
           </div>) : (<Circles />)}
         </header>
       </div>
