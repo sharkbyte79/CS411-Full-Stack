@@ -59,35 +59,17 @@ router.get('/callback', async (req, res) => {
         password: client_secret,
     };
 
-    // We're taking multiple responses here so make it mutable
     var response = await axios.post(token_url, data, { headers, auth });
-    const accessToken = response.data.access_token;
+    const access_token = response.data.access_token;
 
-    // NOTE: access token should not be included in log to console except for testing!
-    console.log('[server]: Access token received from Spotify,', accessToken);
+    // WARN: The endpoint that would retrieve a user id is down and will throw an invalid token error.
+    // Using a hardcoded user id in its place.
+    const user_id = "31li3ybokyk2lhumdqredasoyv7q"; 
+    console.log('[server]: Access token received from Spotify')
 
-    var response = await axios;
-
-    // TODO: To save the access token with a unique identifier, we're hitting the Spotify api again
-    // for the current user's user id before storing it all.
-    // Also store the user id as a cookie to query Mongo with it?
-    //
-    // WARN: This endpoint is down and will throw an invalid token error.
-    // Using a hardcoded user_id in its place
-    var response = await axios
-        .get('https://api.spotify.com/v1/me', {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        })
-        .then((response) => {
-            //const user_id = response.data.id;
-            //console.log('[server]: Request for user info was fulfilled');
-            //console.log(user_id);
-        })
-        .catch((error) => {
-            console.error('[error]:', error.message);
-        });
+    const token = new Token({user_id, access_token});
+    await token.save();
+    console.log("[server]: Access token and user ID saved to database");
 
     // TODO: Handle redirecting to '/' (or '/playlist'?) route after receiving token
     console.log('[server]: Redirecting user away from callback route');

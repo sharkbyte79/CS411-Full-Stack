@@ -23,6 +23,7 @@ router.get('/cover', async (req, res) => {
                         has_breeds: 0, // set to 1 to only return entries with breed info
                     })
             );
+
             urlParts = response.data[0].url.split('.');
             fileExt = urlParts[3];
             console.log(
@@ -36,8 +37,18 @@ router.get('/cover', async (req, res) => {
                 console.log('[server]: Response with gif was rejected');
             }
         }
+
         // console.log('[server]: Response from TheCatAPI was:\n',response.data[0]);
-        res.send(response.data[0]); // NOTE: Right now we're just displaying the response
+        // NOTE: This should really be kept in a separate route, but for my testing purposes
+        // its going here
+        id = response.data[0].id;
+        url = response.data[0].url
+
+        const cover = new Cover({id, url});
+        await cover.save();
+
+        // res.status(201).json(cover);
+        console.log("[server]: Cover was saved to database");
     } catch (error) {
         res.status(500).send(error.toString());
     }
@@ -45,9 +56,8 @@ router.get('/cover', async (req, res) => {
 
 router.post('/save-cover', async (req, res) => {
     try {
-        // TODO: This doesn't quite work yet.
         const { id, url } = req.body;
-        const ok = await Cover.findOne({ id });
+        const ok = await Cover.findOne({ id, url });
 
         if (ok) {
             return res.status(409).send('Image ID already exists.');
@@ -57,6 +67,7 @@ router.post('/save-cover', async (req, res) => {
         await cover.save();
 
         console.log('[server]: New cover was saved to the database!');
+        res.json(201).json(cover)
     } catch (error) {
         res.status(500).send(error.toString());
     }
