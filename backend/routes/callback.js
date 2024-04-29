@@ -15,12 +15,15 @@ router.get('/callback', async (req, res) => {
     var code = req.query.code || null;
     var state = req.query.state || null;
 
+    console.log(code)
+    console.log(state)
+
     if (state === null) {
         res.redirect(
             '/#' +
-                querystring.stringify({
-                    error: 'state_mismatch',
-                })
+            querystring.stringify({
+                error: 'state_mismatch',
+            })
         );
     } else {
         var authOptions = {
@@ -64,16 +67,22 @@ router.get('/callback', async (req, res) => {
 
     // WARN: The endpoint that would retrieve a user id is down and will throw an invalid token error.
     // Using a hardcoded user id in its place.
-    const user_id = "31li3ybokyk2lhumdqredasoyv7q"; 
+    const user_id = "31li3ybokyk2lhumdqredasoyv7q";
     console.log('[server]: Access token received from Spotify')
 
-    const token = new Token({user_id, access_token});
+    console.log(user_id, access_token)
+    const token = new Token({ user_id, access_token });
     await token.save();
     console.log("[server]: Access token and user ID saved to database");
 
     // TODO: Handle redirecting to '/' (or '/playlist'?) route after receiving token
     console.log('[server]: Redirecting user away from callback route');
-    res.redirect('/');
+    res.redirect(
+        'http://localhost:4000/?' +
+        querystring.stringify({
+            user_id: user_id
+        })
+    );;
 });
 
 module.exports = router;

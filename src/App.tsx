@@ -10,6 +10,7 @@ import './App.css';
 const App = () => {
   /* UseStae Declaration */
   const [token, setToken] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
   const [user, setUser] = useState<IUserInformation | null>(null);
   const [songIDs, setSongIDs] = useState<string[]>(["0kdqcbwei4MDWFEX5f33yG", "44L2bY93uD65CEHWbozpx4", "5TiGe89LNDwridBLbLBGgR", "22VHOlVYBqytsrAqV8yXBK", "0ZpHuEhi1CvOJgrqOSy8mv", "60bAuEmJQfzeDV1B84H4xY"]);
   const [songs, setSongs] = useState<ISongInformation[]>([]);
@@ -18,14 +19,15 @@ const App = () => {
 
   /* Logout the user and delete */
   const logout = () => {
-    setToken("")
-    window.localStorage.removeItem("token")
+    window.location.href = ("http://localhost:4000")
   };
 
   const spotifyLogin = async () => {
     try {
       const res = await fetch('login');
       const data = await res.json()
+      // const url = `${CONST.AUTH_ENDPOINT}?client_id=${CONST.CLIENT_ID}&redirect_uri=${CONST.REDIRECT_URI}&response_type=${CONST.RESPONSE_TYPE}&scope=${CONST.SCOPE}`;
+      // window.location.href = url;
       console.log(data)
       window.location.href = data
     } catch (error) {
@@ -100,38 +102,6 @@ const App = () => {
     }
   };
 
-  const getToken = () => {
-    const hash = window.location.hash;
-    let token = window.localStorage.getItem("token")
-
-    if (!token && hash) {
-      console.log(hash);
-      if (hash) {
-        const tokenParam = hash
-          .substring(1)
-          .split("&")
-          .find(elem => elem.startsWith("access_token="));
-        console.log(tokenParam);
-
-        if (tokenParam) {
-          const tokenParts = tokenParam.split("=");
-          if (tokenParts.length === 2) {
-            token = tokenParts[1];
-            window.location.hash = "";
-            window.localStorage.setItem("token", token);
-          }
-        }
-      }
-      window.location.hash = ""
-      if (token) {
-        window.localStorage.setItem("token", token);
-      }
-    }
-    if (token) {
-      setToken(token);
-    }
-  };
-
   async function fetchSingleSongInformation(id: string) {
     try {
       const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
@@ -192,7 +162,16 @@ const App = () => {
 
   /* Try to get the token when the website starts */
   useEffect(() => {
-    getToken()
+    const param = window.location.href
+      .split("?")
+    if (param.length >= 2) {
+      const user_id = param[1].split("=")[1]
+      console.log(user_id)
+      setUserId(user_id)
+      return
+    }
+    console.log("user_id is empty")
+    setUserId("")
   }, [])
 
   /* Fetch the user information when we have the token */
@@ -251,13 +230,13 @@ const App = () => {
           }
 
           {!isLoading ? (<div className="Button">
-            {token ?
+            {userId ?
               <button onClick={logout}>Logout</button>
               : <button onClick={spotifyLogin}>Login To Start</button>}
-            {token ?
+            {userId ?
               <button onClick={playClick}>Let's Play</button>
               : <></>}
-              <p className="description">Create a Spotify playlist based on cute photos of cats!</p>
+            <p className="description">Create a Spotify playlist based on cute photos of cats!</p>
           </div>) : (<Circles />)}
         </header>
       </div>
