@@ -15,9 +15,6 @@ router.get('/callback', async (req, res) => {
     var code = req.query.code || null;
     var state = req.query.state || null;
 
-    console.log(code)
-    console.log(state)
-
     if (state === null) {
         res.redirect(
             '/#' +
@@ -26,63 +23,50 @@ router.get('/callback', async (req, res) => {
             })
         );
     } else {
-        var authOptions = {
-            url: 'https://accounts.spotify.com/api/token',
-            form: {
+        try {
+            const auth = await axios.post('https://accounts.spotify.com/api/token', {
                 code: code,
                 redirect_uri: redirect_uri,
-                grant_type: 'authorization_code',
-            },
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-                Authorization:
-                    'Basic ' +
-                    new Buffer.from(client_id + ':' + client_secret).toString(
-                        'base64'
-                    ),
-            },
-            json: true,
-        };
+                grant_type: 'authorization_code'
+            }, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+                }
+            });
+
+            const data = auth.data;
+            const access_token = data.access_token;
+            const refresh_token = data.refresh_token;
+
+            const userInfo = await axios.get('https://api.spotify.com/v1/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + access_token
+                },
+                json: true
+            });
+
+            const user = userInfo.data;
+            const user_id = user.id;
+
+            console.log('[server]: Access token received from Spotify')
+
+            const token = new Token({ user_id, access_token });
+            await token.save();
+            console.log("[server]: Access token and user ID saved to database");
+
+            console.log('[server]: Redirecting user away from callback route');
+            res.redirect(
+                'http://localhost:4000/?' +
+                querystring.stringify({
+                    user_id: user_id
+                })
+            );;
+            // Proceed with the obtained access token and refresh token
+        } catch (error) {
+            console.error('Error:', error.response.data);
+        }
     }
-
-    // NOTE: This is from stack overflow... somewhere
-    const token_url = 'https://accounts.spotify.com/api/token';
-
-    const data = {
-        grant_type: 'client_credentials',
-    };
-
-    const headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-    };
-
-    const auth = {
-        username: client_id,
-        password: client_secret,
-    };
-
-    var response = await axios.post(token_url, data, { headers, auth });
-    const access_token = response.data.access_token;
-
-    // WARN: The endpoint that would retrieve a user id is down and will throw an invalid token error.
-    // Using a hardcoded user id in its place.
-    const user_id = "31li3ybokyk2lhumdqredasoyv7q";
-    console.log('[server]: Access token received from Spotify')
-
-    console.log(user_id, access_token)
-    const token = new Token({ user_id, access_token });
-    await token.save();
-    console.log("[server]: Access token and user ID saved to database");
-
-    // TODO: Handle redirecting to '/' (or '/playlist'?) route after receiving token
-    console.log('[server]: Redirecting user away from callback route');
-    res.redirect(
-        'http://localhost:4000/?' +
-        querystring.stringify({
-            user_id: user_id
-        })
-    );;
 });
 
 module.exports = router;
